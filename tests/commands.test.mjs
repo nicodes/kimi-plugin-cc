@@ -51,19 +51,45 @@ test("setup command installs conditionally and never runs kimi login", () => {
   assert.match(content, /never run `kimi login`/i);
 });
 
-test("rescue command routes through the kimi-rescue subagent with resume gating", () => {
-  const content = readPluginFile("commands", "rescue.md");
+test("coder command routes through the kimi-coder subagent with write-scoped resume gating", () => {
+  const content = readPluginFile("commands", "coder.md");
   const meta = frontmatter(content);
 
   assert.match(meta, /allowed-tools: .*Agent/);
-  assert.match(content, /subagent_type: "kimi:kimi-rescue"/);
+  assert.match(content, /subagent_type: "kimi:kimi-coder"/);
   assert.match(content, /not a skill/);
-  assert.match(content, /task-resume-candidate --json/);
+  assert.match(content, /task-resume-candidate --write --json/);
   assert.match(content, /Continue current Kimi session/);
   assert.match(content, /Start a new Kimi session/);
   assert.match(content, /\(Recommended\)/);
   assert.match(content, /verbatim/);
   assert.doesNotMatch(content, /--effort/);
+});
+
+test("explorer command routes through the kimi-explorer subagent and stays read-only", () => {
+  const content = readPluginFile("commands", "explorer.md");
+  const meta = frontmatter(content);
+
+  assert.match(meta, /allowed-tools: .*Agent/);
+  assert.match(content, /subagent_type: "kimi:kimi-explorer"/);
+  assert.match(content, /not a skill/);
+  assert.match(content, /task --read-only/);
+  assert.match(content, /strictly read-only/);
+  assert.match(content, /verbatim/);
+  assert.doesNotMatch(content, /--effort/);
+});
+
+test("reviewer command routes through the kimi-reviewer subagent and stays review-only", () => {
+  const content = readPluginFile("commands", "reviewer.md");
+  const meta = frontmatter(content);
+
+  assert.match(meta, /allowed-tools: .*Agent/);
+  assert.match(content, /subagent_type: "kimi:kimi-reviewer"/);
+  assert.match(content, /not a skill/);
+  assert.match(content, /review-only/);
+  assert.match(content, /--base <target-branch>/);
+  assert.match(content, /verbatim/);
+  assert.match(content, /Do not fix any issues/);
 });
 
 test("passthrough commands invoke the companion inline", () => {
@@ -80,19 +106,30 @@ test("passthrough commands invoke the companion inline", () => {
   }
 });
 
-test("kimi-rescue agent is a thin forwarder without effort flags", () => {
-  const content = readPluginFile("agents", "kimi-rescue.md");
-  const meta = frontmatter(content);
+test("role agents are thin forwarders with the right helper invocation", () => {
+  const coder = readPluginFile("agents", "kimi-coder.md");
+  assert.match(frontmatter(coder), /name: kimi-coder/);
+  assert.match(frontmatter(coder), /kimi-cli-runtime/);
+  assert.match(coder, /exactly one `Bash` call/);
+  assert.match(coder, /task --write/);
+  assert.match(coder, /return nothing/);
+  assert.doesNotMatch(coder, /--effort/);
 
-  assert.match(meta, /name: kimi-rescue/);
-  assert.match(meta, /tools: Bash/);
-  assert.match(meta, /kimi-cli-runtime/);
-  assert.match(content, /exactly one `Bash` call/);
-  assert.match(content, /return nothing/);
-  assert.match(content, /--write/);
-  assert.match(content, /--resume-last/);
-  assert.doesNotMatch(content, /--effort/);
-  assert.doesNotMatch(content, /spark/);
+  const explorer = readPluginFile("agents", "kimi-explorer.md");
+  assert.match(frontmatter(explorer), /name: kimi-explorer/);
+  assert.match(frontmatter(explorer), /kimi-cli-runtime/);
+  assert.match(explorer, /exactly one `Bash` call/);
+  assert.match(explorer, /task --read-only/);
+  assert.match(explorer, /never `--write`/);
+  assert.match(explorer, /return nothing/);
+
+  const reviewer = readPluginFile("agents", "kimi-reviewer.md");
+  assert.match(frontmatter(reviewer), /name: kimi-reviewer/);
+  assert.match(frontmatter(reviewer), /kimi-cli-runtime/);
+  assert.match(reviewer, /exactly one `Bash` call/);
+  assert.match(reviewer, /kimi-companion\.mjs" review/);
+  assert.match(reviewer, /Never fix, patch/);
+  assert.match(reviewer, /return nothing/);
 });
 
 test("internal skills are not user-invocable and keep the no-auto-fix rule", () => {
