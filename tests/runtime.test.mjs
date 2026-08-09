@@ -179,7 +179,55 @@ test("task --resume-last without a tracked session suggests a fresh start", () =
   const result = companion(fixture, ["task", "--resume-last"]);
 
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /No previous Kimi task session is tracked/);
+  assert.match(result.stderr, /No previous read-only \(explorer\) Kimi session is tracked/);
+});
+
+test("task rejects --read-only combined with --write", () => {
+  const fixture = makeFixture("task-ok");
+
+  const result = companion(fixture, ["task", "--read-only", "--write", "do something"]);
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Choose either --write or --read-only/);
+});
+
+test("resume is role-matched: a coder cannot resume an explorer session", () => {
+  const fixture = makeFixture("task-ok");
+
+  const explorerRun = companion(fixture, ["task", "--read-only", "research the repo"]);
+  assert.equal(explorerRun.status, 0, explorerRun.stderr);
+
+  const coderResume = companion(fixture, ["task", "--resume-last", "--write", "now fix it"]);
+  assert.notEqual(coderResume.status, 0);
+  assert.match(coderResume.stderr, /No previous write-capable \(coder\) Kimi session is tracked/);
+
+  const explorerResume = companion(fixture, ["task", "--resume-last", "--read-only", "dig deeper"]);
+  assert.equal(explorerResume.status, 0, explorerResume.stderr);
+  assert.match(explorerResume.stdout, /Resumed the prior session/);
+});
+
+test("task-resume-candidate filters by role", () => {
+  const fixture = makeFixture("task-ok");
+
+  companion(fixture, ["task", "--read-only", "research something"]);
+
+  const writeCandidate = JSON.parse(companion(fixture, ["task-resume-candidate", "--write", "--json"]).stdout);
+  assert.equal(writeCandidate.available, false);
+
+  const readOnlyCandidate = JSON.parse(companion(fixture, ["task-resume-candidate", "--read-only", "--json"]).stdout);
+  assert.equal(readOnlyCandidate.available, true);
+  assert.equal(readOnlyCandidate.candidate.threadId, "session_1");
+});
+
+test("status labels task jobs by role", () => {
+  const fixture = makeFixture("task-ok");
+
+  companion(fixture, ["task", "--read-only", "explore work"]);
+  companion(fixture, ["task", "--write", "coder work"]);
+
+  const report = JSON.parse(companion(fixture, ["status", "--json"]).stdout);
+  const labels = [report.latestFinished, ...report.recent].filter(Boolean).map((job) => job.kindLabel).sort();
+  assert.deepEqual(labels, ["coder", "explorer"]);
 });
 
 test("task surfaces auth failures with login guidance", () => {
