@@ -29,6 +29,7 @@ Forwarding rules:
 - Leave model unset by default. Only add `--model` when the user explicitly asks for a specific model.
 - Treat `--model <value>`, `--resume`, and `--fresh` as routing controls and do not include them in the task text you pass through.
 - `--resume` means add `--resume-last`; it continues only previous explorer (read-only) sessions.
+- `--fresh` means do not add `--resume-last`.
 - Preserve the user's research question as-is apart from stripping routing flags.
 - Return the stdout of the `kimi-companion` command exactly as-is.
 - If the Bash call fails or Kimi cannot be invoked, return nothing.

@@ -776,9 +776,10 @@ function handleTaskResumeCandidate(argv) {
           }
   };
 
+  const roleSuffix = writeFilter === undefined ? "" : writeFilter ? " (coder/write-capable only)" : " (explorer/read-only only)";
   const rendered = candidate
-    ? `Resumable task found: ${candidate.id} (${candidate.status}).\n`
-    : "No resumable task found for this session.\n";
+    ? `Resumable task found${roleSuffix}: ${candidate.id} (${candidate.status}).\n`
+    : `No resumable task found for this session${roleSuffix}.\n`;
   outputCommandResult(payload, rendered, options.json);
 }
 

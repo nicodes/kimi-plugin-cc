@@ -32,8 +32,8 @@ Requirements: Node.js >= 18.18, git, and the `kimi` CLI on PATH ([install instru
 | `/kimi:setup` | Check install, config, and `kimi doctor` health; offer to install the CLI. |
 | `/kimi:review [--wait\|--background] [--base <ref>] [--scope auto\|working-tree\|branch] [focus...]` | Review uncommitted changes or the branch diff inline (no subagent). Runs under Kimi's read-only `explore` agent plus a prompt-level read-only contract, and verifies afterwards that the working tree was untouched. |
 | `/kimi:coder [--background\|--wait] [--resume\|--fresh] [--model <alias>] <task>` | Delegate implementation or debugging to the write-capable `kimi-coder` subagent. |
-| `/kimi:explorer [--background\|--wait] [--model <alias>] <question>` | Delegate strictly read-only codebase and web research to the `kimi-explorer` subagent (`explore` profile, no write tools). |
-| `/kimi:reviewer [--background\|--wait] [--base <ref>] [focus...]` | Delegate a review to the `kimi-reviewer` subagent — same review runtime as `/kimi:review`, routed through an agent so it composes with the coder/explorer hierarchy. |
+| `/kimi:explorer [--background\|--wait] [--resume\|--fresh] [--model <alias>] <question>` | Delegate strictly read-only codebase and web research to the `kimi-explorer` subagent (`explore` profile, no write tools). |
+| `/kimi:reviewer [--background\|--wait] [--base <ref>] [--scope auto\|working-tree\|branch] [--model <alias>] [focus...]` | Delegate a review to the `kimi-reviewer` subagent — same review runtime as `/kimi:review`, routed through an agent so it composes with the coder/explorer hierarchy. |
 | `/kimi:status [job-id] [--wait] [--all]` | Show active and recent Kimi jobs for this repository. |
 | `/kimi:result [job-id]` | Show the stored final output of a finished job, with a `kimi --session <id>` resume hint. |
 | `/kimi:cancel [job-id]` | Kill an active background job (process-tree kill; the Kimi CLI has no interrupt API). |
