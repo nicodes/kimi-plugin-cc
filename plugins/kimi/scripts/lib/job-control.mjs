@@ -31,7 +31,7 @@ function getJobTypeLabel(job) {
     return "review";
   }
   if (job.jobClass === "task" || job.kind === "task") {
-    return "rescue";
+    return job.write ? "coder" : "explorer";
   }
   return "job";
 }

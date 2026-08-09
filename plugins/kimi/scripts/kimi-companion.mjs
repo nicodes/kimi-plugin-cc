@@ -62,9 +62,9 @@ function printUsage() {
       "Usage:",
       "  node scripts/kimi-companion.mjs setup [--json]",
       "  node scripts/kimi-companion.mjs review [--wait|--background] [--base <ref>] [--scope <auto|working-tree|branch>] [--model <alias>] [focus text]",
-      "  node scripts/kimi-companion.mjs task [--background] [--write] [--resume-last|--resume|--fresh] [--model <alias>] [--prompt-file <path>] [prompt]",
+      "  node scripts/kimi-companion.mjs task [--background] [--write|--read-only] [--resume-last|--resume|--fresh] [--model <alias>] [--prompt-file <path>] [prompt]",
       "  node scripts/kimi-companion.mjs task-worker --job-id <id>",
-      "  node scripts/kimi-companion.mjs task-resume-candidate [--json]",
+      "  node scripts/kimi-companion.mjs task-resume-candidate [--write|--read-only] [--json]",
       "  node scripts/kimi-companion.mjs status [job-id] [--wait] [--all] [--json]",
       "  node scripts/kimi-companion.mjs result [job-id] [--json]",
       "  node scripts/kimi-companion.mjs cancel [job-id] [--json]"
@@ -244,14 +244,18 @@ function filterJobsForCurrentClaudeSession(jobs) {
   return jobs.filter((job) => job.sessionId === sessionId);
 }
 
-function findLatestResumableTaskJob(jobs) {
+// `write` narrows candidates to matching sessions: a resumed session keeps the
+// agent profile it was created with, so a coder must never resume a read-only
+// explorer session (it would silently lose write access) and vice versa.
+function findLatestResumableTaskJob(jobs, options = {}) {
   return (
     jobs.find(
       (job) =>
         job.jobClass === "task" &&
         job.threadId &&
         job.status !== "queued" &&
-        job.status !== "running"
+        job.status !== "running" &&
+        (options.write === undefined || Boolean(job.write) === options.write)
     ) ?? null
   );
 }
@@ -286,7 +290,7 @@ function resolveLatestTrackedTaskSession(cwd, options = {}) {
     throw new Error(`Task ${activeTask.id} is still running. Use /kimi:status before continuing it.`);
   }
 
-  const trackedTask = findLatestResumableTaskJob(visibleJobs);
+  const trackedTask = findLatestResumableTaskJob(visibleJobs, { write: options.write });
   return trackedTask ? trackedTask.threadId : null;
 }
 
@@ -369,11 +373,13 @@ async function executeTaskRun(request) {
   let resumeSessionId = null;
   if (request.resumeLast) {
     resumeSessionId = resolveLatestTrackedTaskSession(workspaceRoot, {
-      excludeJobId: request.jobId
+      excludeJobId: request.jobId,
+      write: Boolean(request.write)
     });
     if (!resumeSessionId) {
+      const roleLabel = request.write ? "write-capable (coder)" : "read-only (explorer)";
       throw new Error(
-        "No previous Kimi task session is tracked for this repository. Start a fresh task, or resume manually with `kimi --session <id>`."
+        `No previous ${roleLabel} Kimi session is tracked for this repository. Start a fresh task, or resume manually with \`kimi --session <id>\`.`
       );
     }
   }
@@ -392,7 +398,8 @@ async function executeTaskRun(request) {
 
   const taskMetadata = buildTaskRunMetadata({
     prompt: request.prompt,
-    resumeLast: request.resumeLast
+    resumeLast: request.resumeLast,
+    write: request.write
   });
   const rendered = renderTaskResult(result, {
     resumed: Boolean(resumeSessionId),
@@ -422,8 +429,9 @@ async function executeTaskRun(request) {
   };
 }
 
-function buildTaskRunMetadata({ prompt, resumeLast = false }) {
-  const title = resumeLast ? "Kimi Resume" : "Kimi Task";
+function buildTaskRunMetadata({ prompt, resumeLast = false, write = false }) {
+  const roleTitle = write ? "Kimi Coder Task" : "Kimi Explorer Task";
+  const title = resumeLast ? "Kimi Resume" : roleTitle;
   const fallbackSummary = resumeLast ? DEFAULT_CONTINUE_PROMPT : "Task";
   return {
     title,
@@ -439,7 +447,7 @@ function createCompanionJob({ prefix, kind, title, workspaceRoot, jobClass, summ
   return createJobRecord({
     id: generateJobId(prefix),
     kind,
-    kindLabel: jobClass === "review" ? "review" : "rescue",
+    kindLabel: jobClass === "review" ? "review" : write ? "coder" : "explorer",
     title,
     workspaceRoot,
     jobClass,
@@ -584,7 +592,7 @@ async function handleReview(argv) {
 async function handleTask(argv) {
   const { options, positionals } = parseCommandInput(argv, {
     valueOptions: ["model", "cwd", "prompt-file"],
-    booleanOptions: ["json", "write", "resume-last", "resume", "fresh", "background"],
+    booleanOptions: ["json", "write", "read-only", "resume-last", "resume", "fresh", "background"],
     aliasMap: {
       m: "model"
     }
@@ -600,10 +608,14 @@ async function handleTask(argv) {
   if (resumeLast && fresh) {
     throw new Error("Choose either --resume/--resume-last or --fresh.");
   }
+  if (options.write && options["read-only"]) {
+    throw new Error("Choose either --write or --read-only.");
+  }
   const write = Boolean(options.write);
   const taskMetadata = buildTaskRunMetadata({
     prompt,
-    resumeLast
+    resumeLast,
+    write
   });
 
   if (options.background) {
@@ -734,13 +746,18 @@ function handleResult(argv) {
 function handleTaskResumeCandidate(argv) {
   const { options } = parseCommandInput(argv, {
     valueOptions: ["cwd"],
-    booleanOptions: ["json"]
+    booleanOptions: ["json", "write", "read-only"]
   });
+
+  if (options.write && options["read-only"]) {
+    throw new Error("Choose either --write or --read-only.");
+  }
+  const writeFilter = options.write ? true : options["read-only"] ? false : undefined;
 
   const workspaceRoot = resolveCommandWorkspace(options);
   const sessionId = getCurrentClaudeSessionId();
   const jobs = filterJobsForCurrentClaudeSession(sortJobsNewestFirst(listJobs(workspaceRoot)));
-  const candidate = findLatestResumableTaskJob(jobs);
+  const candidate = findLatestResumableTaskJob(jobs, { write: writeFilter });
 
   const payload = {
     available: Boolean(candidate),
@@ -759,9 +776,10 @@ function handleTaskResumeCandidate(argv) {
           }
   };
 
+  const roleSuffix = writeFilter === undefined ? "" : writeFilter ? " (coder/write-capable only)" : " (explorer/read-only only)";
   const rendered = candidate
-    ? `Resumable task found: ${candidate.id} (${candidate.status}).\n`
-    : "No resumable task found for this session.\n";
+    ? `Resumable task found${roleSuffix}: ${candidate.id} (${candidate.status}).\n`
+    : `No resumable task found for this session${roleSuffix}.\n`;
   outputCommandResult(payload, rendered, options.json);
 }
 

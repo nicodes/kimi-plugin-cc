@@ -15,8 +15,8 @@ When the helper returns Kimi output:
 - Preserve output sections when the prompt asked for them, such as observed facts, inferences, open questions, touched files, or next steps.
 - If there are no findings, say that explicitly and keep the residual-risk note brief.
 - If Kimi made edits, say so explicitly and show `git status --short` so the user sees the touched files.
-- For `kimi:kimi-rescue`, do not turn a failed or incomplete Kimi run into a Claude-side implementation attempt. Report the failure and stop.
-- For `kimi:kimi-rescue`, if Kimi was never successfully invoked, do not generate a substitute answer at all.
+- For the `kimi:kimi-coder`, `kimi:kimi-explorer`, and `kimi:kimi-reviewer` subagents, do not turn a failed or incomplete Kimi run into a Claude-side implementation attempt. Report the failure and stop.
+- For those subagents, if Kimi was never successfully invoked, do not generate a substitute answer at all.
 - CRITICAL: After presenting review findings, STOP. Do not make any code changes. Do not fix any issues. You MUST explicitly ask the user which issues, if any, they want fixed before touching a single file. Auto-applying fixes from a review is strictly forbidden, even if the fix is obvious.
 - If the helper reports malformed output or a failed Kimi run, include the most actionable stderr lines and stop there instead of guessing.
 - If the helper reports that setup or authentication is required, direct the user to `/kimi:setup` or to type `! kimi login` themselves, and do not improvise alternate auth flows.
