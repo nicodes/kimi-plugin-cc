@@ -148,3 +148,19 @@ vite.config.ts.timestamp-*
 
 output/
 plugins/codex/.generated/
+
+# Native runtime files generated from functional inputs.
+/plugins/kimi/agents/kimi-coder.md
+/plugins/kimi/agents/kimi-explorer.md
+/plugins/kimi/agents/kimi-reviewer.md
+/plugins/kimi/commands/cancel.md
+/plugins/kimi/commands/coder.md
+/plugins/kimi/commands/explorer.md
+/plugins/kimi/commands/result.md
+/plugins/kimi/commands/review.md
+/plugins/kimi/commands/reviewer.md
+/plugins/kimi/commands/setup.md
+/plugins/kimi/commands/status.md
+/plugins/kimi/prompts/review.md
+/plugins/kimi/skills/kimi-cli-runtime/SKILL.md
+/plugins/kimi/skills/kimi-result-handling/SKILL.md
