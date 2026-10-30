@@ -1,0 +1,58 @@
+[
+  {
+    "source": "plugins/kimi/agents/kimi-coder.prompt",
+    "target": "plugins/kimi/agents/kimi-coder.md"
+  },
+  {
+    "source": "plugins/kimi/agents/kimi-explorer.prompt",
+    "target": "plugins/kimi/agents/kimi-explorer.md"
+  },
+  {
+    "source": "plugins/kimi/agents/kimi-reviewer.prompt",
+    "target": "plugins/kimi/agents/kimi-reviewer.md"
+  },
+  {
+    "source": "plugins/kimi/commands/cancel.prompt",
+    "target": "plugins/kimi/commands/cancel.md"
+  },
+  {
+    "source": "plugins/kimi/commands/coder.prompt",
+    "target": "plugins/kimi/commands/coder.md"
+  },
+  {
+    "source": "plugins/kimi/commands/explorer.prompt",
+    "target": "plugins/kimi/commands/explorer.md"
+  },
+  {
+    "source": "plugins/kimi/commands/result.prompt",
+    "target": "plugins/kimi/commands/result.md"
+  },
+  {
+    "source": "plugins/kimi/commands/review.prompt",
+    "target": "plugins/kimi/commands/review.md"
+  },
+  {
+    "source": "plugins/kimi/commands/reviewer.prompt",
+    "target": "plugins/kimi/commands/reviewer.md"
+  },
+  {
+    "source": "plugins/kimi/commands/setup.prompt",
+    "target": "plugins/kimi/commands/setup.md"
+  },
+  {
+    "source": "plugins/kimi/commands/status.prompt",
+    "target": "plugins/kimi/commands/status.md"
+  },
+  {
+    "source": "plugins/kimi/prompts/review.prompt",
+    "target": "plugins/kimi/prompts/review.md"
+  },
+  {
+    "source": "plugins/kimi/skills/kimi-cli-runtime/SKILL.prompt",
+    "target": "plugins/kimi/skills/kimi-cli-runtime/SKILL.md"
+  },
+  {
+    "source": "plugins/kimi/skills/kimi-result-handling/SKILL.prompt",
+    "target": "plugins/kimi/skills/kimi-result-handling/SKILL.md"
+  }
+]
