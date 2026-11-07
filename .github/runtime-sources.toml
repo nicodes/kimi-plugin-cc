@@ -1,0 +1,55 @@
+[[sources]]
+source = "plugins/kimi/agents/kimi-coder.prompt"
+target = "plugins/kimi/agents/kimi-coder.md"
+
+[[sources]]
+source = "plugins/kimi/agents/kimi-explorer.prompt"
+target = "plugins/kimi/agents/kimi-explorer.md"
+
+[[sources]]
+source = "plugins/kimi/agents/kimi-reviewer.prompt"
+target = "plugins/kimi/agents/kimi-reviewer.md"
+
+[[sources]]
+source = "plugins/kimi/commands/cancel.prompt"
+target = "plugins/kimi/commands/cancel.md"
+
+[[sources]]
+source = "plugins/kimi/commands/coder.prompt"
+target = "plugins/kimi/commands/coder.md"
+
+[[sources]]
+source = "plugins/kimi/commands/explorer.prompt"
+target = "plugins/kimi/commands/explorer.md"
+
+[[sources]]
+source = "plugins/kimi/commands/result.prompt"
+target = "plugins/kimi/commands/result.md"
+
+[[sources]]
+source = "plugins/kimi/commands/review.prompt"
+target = "plugins/kimi/commands/review.md"
+
+[[sources]]
+source = "plugins/kimi/commands/reviewer.prompt"
+target = "plugins/kimi/commands/reviewer.md"
+
+[[sources]]
+source = "plugins/kimi/commands/setup.prompt"
+target = "plugins/kimi/commands/setup.md"
+
+[[sources]]
+source = "plugins/kimi/commands/status.prompt"
+target = "plugins/kimi/commands/status.md"
+
+[[sources]]
+source = "plugins/kimi/prompts/review.prompt"
+target = "plugins/kimi/prompts/review.md"
+
+[[sources]]
+source = "plugins/kimi/skills/kimi-cli-runtime/SKILL.prompt"
+target = "plugins/kimi/skills/kimi-cli-runtime/SKILL.md"
+
+[[sources]]
+source = "plugins/kimi/skills/kimi-result-handling/SKILL.prompt"
+target = "plugins/kimi/skills/kimi-result-handling/SKILL.md"
